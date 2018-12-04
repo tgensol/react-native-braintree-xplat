@@ -289,7 +289,7 @@ RCT_EXPORT_METHOD(getDeviceData:(NSDictionary *)options callback:(RCTResponseSen
 
 - (UIViewController*)reactRoot {
     UIViewController *root = [UIApplication sharedApplication].keyWindow.rootViewController;
-    UIViewController *maybeModal = root.presentedViewController
+    UIViewController *maybeModal = root.presentedViewController;
     while (root.presentedViewController) {
          root = root.presentedViewController;
     }
