@@ -4,6 +4,7 @@ package = JSON.parse(File.read('../package.json'))
 Pod::Spec.new do |s|
   s.name             = "RCTBraintree"
   s.version          = package["version"]
+  s.modular_headers  =  true
   s.summary          = package["description"]
   s.requires_arc     = true
   s.license          = { :type => package["license"] }
@@ -12,4 +13,5 @@ Pod::Spec.new do |s|
   s.source           = { :git => s.homepage, :tag => "v#{s.version}" }
   s.platform         = :ios, "9.0"
   s.source_files     = 'RCTBraintree/**/*.{h,m}','RCTBraintree/Braintree/**/*'
+  s.dependency         'React'
 end
