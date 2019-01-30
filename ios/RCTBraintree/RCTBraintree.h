@@ -16,7 +16,7 @@
 #import "BTDataCollector.h"
 #import "PPDataCollector.h"
 
-@interface RCTBraintree : UIViewController <RCTBridgeModule, BTDropInViewControllerDelegate, BTViewControllerPresentingDelegate>
+@interface RCTBraintree : UIViewController <RCTBridgeModule, BTViewControllerPresentingDelegate>
 
 @property (nonatomic, strong) BTAPIClient *braintreeClient;
 // @property (nonatomic, strong, readwrite) BTThreeDSecureDriver *threeDSecure;

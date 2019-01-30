@@ -62,50 +62,50 @@ RCT_EXPORT_METHOD(setup:(NSString *)clientToken callback:(RCTResponseSenderBlock
     }
 }
 
-RCT_EXPORT_METHOD(showPaymentViewController:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback)
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
+// RCT_EXPORT_METHOD(showPaymentViewController:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback)
+// {
+//     dispatch_async(dispatch_get_main_queue(), ^{
 
-        BTDropInViewController *dropInViewController = [[BTDropInViewController alloc] initWithAPIClient:self.braintreeClient];
-        dropInViewController.delegate = self;
+//         BTDropInViewController *dropInViewController = [[BTDropInViewController alloc] initWithAPIClient:self.braintreeClient];
+//         dropInViewController.delegate = self;
 
-        NSLog(@"%@", options);
+//         NSLog(@"%@", options);
 
-        UIColor *tintColor = options[@"tintColor"];
-        UIColor *bgColor = options[@"bgColor"];
-        UIColor *barBgColor = options[@"barBgColor"];
-        UIColor *barTintColor = options[@"barTintColor"];
+//         UIColor *tintColor = options[@"tintColor"];
+//         UIColor *bgColor = options[@"bgColor"];
+//         UIColor *barBgColor = options[@"barBgColor"];
+//         UIColor *barTintColor = options[@"barTintColor"];
 
-        NSString *title = options[@"title"];
-        NSString *description = options[@"description"];
-        NSString *amount = options[@"amount"];
+//         NSString *title = options[@"title"];
+//         NSString *description = options[@"description"];
+//         NSString *amount = options[@"amount"];
 
-        if (tintColor) dropInViewController.view.tintColor = [RCTConvert UIColor:tintColor];
-        if (bgColor) dropInViewController.view.backgroundColor = [RCTConvert UIColor:bgColor];
+//         if (tintColor) dropInViewController.view.tintColor = [RCTConvert UIColor:tintColor];
+//         if (bgColor) dropInViewController.view.backgroundColor = [RCTConvert UIColor:bgColor];
 
-        dropInViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(userDidCancelPayment)];
+//         dropInViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(userDidCancelPayment)];
 
-        self.callback = callback;
+//         self.callback = callback;
 
-        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:dropInViewController];
+//         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:dropInViewController];
 
-        if (barBgColor) navigationController.navigationBar.barTintColor = [RCTConvert UIColor:barBgColor];
-        if (barTintColor) navigationController.navigationBar.tintColor = [RCTConvert UIColor:barTintColor];
+//         if (barBgColor) navigationController.navigationBar.barTintColor = [RCTConvert UIColor:barBgColor];
+//         if (barTintColor) navigationController.navigationBar.tintColor = [RCTConvert UIColor:barTintColor];
 
-        if (options[@"callToActionText"]) {
-            BTPaymentRequest *paymentRequest = [[BTPaymentRequest alloc] init];
-            paymentRequest.callToActionText = options[@"callToActionText"];
+//         if (options[@"callToActionText"]) {
+//             BTPaymentRequest *paymentRequest = [[BTPaymentRequest alloc] init];
+//             paymentRequest.callToActionText = options[@"callToActionText"];
 
-            dropInViewController.paymentRequest = paymentRequest;
-        }
+//             dropInViewController.paymentRequest = paymentRequest;
+//         }
 
-        if (title) [dropInViewController.paymentRequest setSummaryTitle:title];
-        if (description) [dropInViewController.paymentRequest setSummaryDescription:description];
-        if (amount) [dropInViewController.paymentRequest setDisplayAmount:amount];
+//         if (title) [dropInViewController.paymentRequest setSummaryTitle:title];
+//         if (description) [dropInViewController.paymentRequest setSummaryDescription:description];
+//         if (amount) [dropInViewController.paymentRequest setDisplayAmount:amount];
 
-        [self.reactRoot presentViewController:navigationController animated:YES completion:nil];
-    });
-}
+//         [self.reactRoot presentViewController:navigationController animated:YES completion:nil];
+//     });
+// }
 
 RCT_EXPORT_METHOD(showPayPalViewController:(RCTResponseSenderBlock)callback)
 {
@@ -233,7 +233,7 @@ RCT_EXPORT_METHOD(getDeviceData:(NSDictionary *)options callback:(RCTResponseSen
     }
 }
 
-#pragma mark - BTDropInViewControllerDelegate
+// #pragma mark - BTDropInViewControllerDelegate
 
 - (void)userDidCancelPayment {
     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
@@ -241,51 +241,51 @@ RCT_EXPORT_METHOD(getDeviceData:(NSDictionary *)options callback:(RCTResponseSen
     self.callback(@[@"USER_CANCELLATION", [NSNull null]]);
 }
 
-- (void)dropInViewControllerWillComplete:(BTDropInViewController *)viewController {
-    runCallback = TRUE;
-}
+// - (void)dropInViewControllerWillComplete:(BTDropInViewController *)viewController {
+//     runCallback = TRUE;
+// }
 
-- (void)dropInViewController:(BTDropInViewController *)viewController didSucceedWithTokenization:(BTPaymentMethodNonce *)paymentMethodNonce {
-    // when the user pays for the first time with paypal, dropInViewControllerWillComplete is never called, yet the callback should be invoked.  the second condition checks for that
-    if (runCallback || ([paymentMethodNonce.type isEqualToString:@"PayPal"] && [viewController.paymentMethodNonces count] == 1)) {
-        // if (self.threeDSecure) {
-        //     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
-        //     [self.threeDSecure verifyCardWithNonce:paymentMethodNonce.nonce
-        //                                     amount:self.threeDSecureOptions[@"amount"]
-        //                                 completion:^(BTThreeDSecureCardNonce *card, NSError *error) {
-        //                                     if (runCallback) {
-        //                                         runCallback = FALSE;
-        //                                         if (error) {
-        //                                             self.callback(@[error.localizedDescription, [NSNull null]]);
-        //                                         } else if (card) {
-        //                                             if (!card.liabilityShiftPossible) {
-        //                                                 self.callback(@[@"3DSECURE_NOT_ABLE_TO_SHIFT_LIABILITY", [NSNull null]]);
-        //                                             } else if (!card.liabilityShifted) {
-        //                                                 self.callback(@[@"3DSECURE_LIABILITY_NOT_SHIFTED", [NSNull null]]);
-        //                                             } else {
-        //                                                 self.callback(@[[NSNull null], card.nonce]);
-        //                                             }
-        //                                         } else {
-        //                                             self.callback(@[@"USER_CANCELLATION", [NSNull null]]);
-        //                                         }
-        //                                     }
-        //                                     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
-        //                                 }];
-        // } else {
-            runCallback = FALSE;
-            self.callback(@[[NSNull null], paymentMethodNonce.nonce]);
-        // }
-    }
+// - (void)dropInViewController:(BTDropInViewController *)viewController didSucceedWithTokenization:(BTPaymentMethodNonce *)paymentMethodNonce {
+//     // when the user pays for the first time with paypal, dropInViewControllerWillComplete is never called, yet the callback should be invoked.  the second condition checks for that
+//     if (runCallback || ([paymentMethodNonce.type isEqualToString:@"PayPal"] && [viewController.paymentMethodNonces count] == 1)) {
+//         // if (self.threeDSecure) {
+//         //     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
+//         //     [self.threeDSecure verifyCardWithNonce:paymentMethodNonce.nonce
+//         //                                     amount:self.threeDSecureOptions[@"amount"]
+//         //                                 completion:^(BTThreeDSecureCardNonce *card, NSError *error) {
+//         //                                     if (runCallback) {
+//         //                                         runCallback = FALSE;
+//         //                                         if (error) {
+//         //                                             self.callback(@[error.localizedDescription, [NSNull null]]);
+//         //                                         } else if (card) {
+//         //                                             if (!card.liabilityShiftPossible) {
+//         //                                                 self.callback(@[@"3DSECURE_NOT_ABLE_TO_SHIFT_LIABILITY", [NSNull null]]);
+//         //                                             } else if (!card.liabilityShifted) {
+//         //                                                 self.callback(@[@"3DSECURE_LIABILITY_NOT_SHIFTED", [NSNull null]]);
+//         //                                             } else {
+//         //                                                 self.callback(@[[NSNull null], card.nonce]);
+//         //                                             }
+//         //                                         } else {
+//         //                                             self.callback(@[@"USER_CANCELLATION", [NSNull null]]);
+//         //                                         }
+//         //                                     }
+//         //                                     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
+//         //                                 }];
+//         // } else {
+//             runCallback = FALSE;
+//             self.callback(@[[NSNull null], paymentMethodNonce.nonce]);
+//         // }
+//     }
     
-    if (!self.threeDSecure) {
-        [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
-    }
-}
+//     if (!self.threeDSecure) {
+//         [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
+//     }
+// }
 
-- (void)dropInViewControllerDidCancel:(__unused BTDropInViewController *)viewController {
-    self.callback(@[@"Drop-In ViewController Closed", [NSNull null]]);
-    [viewController dismissViewControllerAnimated:YES completion:nil];
-}
+// - (void)dropInViewControllerDidCancel:(__unused BTDropInViewController *)viewController {
+//     self.callback(@[@"Drop-In ViewController Closed", [NSNull null]]);
+//     [viewController dismissViewControllerAnimated:YES completion:nil];
+// }
 
 - (UIViewController*)reactRoot {
     UIViewController *root = [UIApplication sharedApplication].keyWindow.rootViewController;
