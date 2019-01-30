@@ -12,5 +12,4 @@ Pod::Spec.new do |s|
   s.source           = { :git => s.homepage, :tag => "v#{s.version}" }
   s.platform         = :ios, "9.0"
   s.source_files     = 'RCTBraintree/**/*.{h,m}','RCTBraintree/Braintree/**/*'
-  s.dependency          'React'
 end
