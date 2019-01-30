@@ -14,4 +14,5 @@ Pod::Spec.new do |s|
   s.source_files     = 'RCTBraintree/**/*.{h,m}'
   s.dependency         'React'
   s.dependency 'Braintree', '~> 4.9.4'
+  s.dependency  ''Braintree/DataCollector'
 end
