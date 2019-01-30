@@ -43,7 +43,7 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
 
   private BraintreeFragment mBraintreeFragment;
 
-  // private ReadableMap threeDSecureOptions;
+  private ReadableMap threeDSecureOptions;
 
   public Braintree(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -264,11 +264,11 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
             BraintreePaymentActivity.EXTRA_PAYMENT_METHOD_NONCE
           );
 
-          // if (this.threeDSecureOptions != null) {
-          //   ThreeDSecure.performVerification(this.mBraintreeFragment, paymentMethodNonce.getNonce(), String.valueOf(this.threeDSecureOptions.getDouble("amount")));
-          // } else {
+          if (this.threeDSecureOptions != null) {
+            ThreeDSecure.performVerification(this.mBraintreeFragment, paymentMethodNonce.getNonce(), String.valueOf(this.threeDSecureOptions.getDouble("amount")));
+          } else {
             this.successCallback.invoke(paymentMethodNonce.getNonce());
-          // }
+          }
           break;
         case BraintreePaymentActivity.BRAINTREE_RESULT_DEVELOPER_ERROR:
         case BraintreePaymentActivity.BRAINTREE_RESULT_SERVER_ERROR:
