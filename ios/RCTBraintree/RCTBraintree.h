@@ -19,12 +19,12 @@
 @interface RCTBraintree : UIViewController <RCTBridgeModule, BTDropInViewControllerDelegate, BTViewControllerPresentingDelegate>
 
 @property (nonatomic, strong) BTAPIClient *braintreeClient;
-@property (nonatomic, strong, readwrite) BTThreeDSecureDriver *threeDSecure;
+// @property (nonatomic, strong, readwrite) BTThreeDSecureDriver *threeDSecure;
 @property (nonatomic, strong) UIViewController *reactRoot;
 @property (nonatomic, strong) BTDataCollector *dataCollector;
 
 @property (nonatomic, strong) RCTResponseSenderBlock callback;
-@property (nonatomic, strong) NSDictionary *threeDSecureOptions;
+// @property (nonatomic, strong) NSDictionary *threeDSecureOptions;
 
 + (instancetype)sharedInstance;
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;

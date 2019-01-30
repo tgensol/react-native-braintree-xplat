@@ -43,7 +43,7 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
 
   private BraintreeFragment mBraintreeFragment;
 
-  private ReadableMap threeDSecureOptions;
+  // private ReadableMap threeDSecureOptions;
 
   public Braintree(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -76,18 +76,18 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
       this.mBraintreeFragment.addListener(new PaymentMethodNonceCreatedListener() {
         @Override
         public void onPaymentMethodNonceCreated(PaymentMethodNonce paymentMethodNonce) {
-          if (threeDSecureOptions != null && paymentMethodNonce instanceof CardNonce) {
-            CardNonce cardNonce = (CardNonce) paymentMethodNonce;
-            if (!cardNonce.getThreeDSecureInfo().isLiabilityShiftPossible()) {
-              nonceErrorCallback("3DSECURE_NOT_ABLE_TO_SHIFT_LIABILITY");
-            } else if (!cardNonce.getThreeDSecureInfo().isLiabilityShifted()) {
-              nonceErrorCallback("3DSECURE_LIABILITY_NOT_SHIFTED");
-            } else {
-              nonceCallback(paymentMethodNonce.getNonce());
-            }
-          } else {
+          // if (threeDSecureOptions != null && paymentMethodNonce instanceof CardNonce) {
+          //   CardNonce cardNonce = (CardNonce) paymentMethodNonce;
+          //   if (!cardNonce.getThreeDSecureInfo().isLiabilityShiftPossible()) {
+          //     nonceErrorCallback("3DSECURE_NOT_ABLE_TO_SHIFT_LIABILITY");
+          //   } else if (!cardNonce.getThreeDSecureInfo().isLiabilityShifted()) {
+          //     nonceErrorCallback("3DSECURE_LIABILITY_NOT_SHIFTED");
+          //   } else {
+          //     nonceCallback(paymentMethodNonce.getNonce());
+          //   }
+          // } else {
             nonceCallback(paymentMethodNonce.getNonce());
-          }
+          // }
         }
       });
       this.mBraintreeFragment.addListener(new BraintreeErrorListener() {
@@ -264,11 +264,11 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
             BraintreePaymentActivity.EXTRA_PAYMENT_METHOD_NONCE
           );
 
-          if (this.threeDSecureOptions != null) {
-            ThreeDSecure.performVerification(this.mBraintreeFragment, paymentMethodNonce.getNonce(), String.valueOf(this.threeDSecureOptions.getDouble("amount")));
-          } else {
+          // if (this.threeDSecureOptions != null) {
+          //   ThreeDSecure.performVerification(this.mBraintreeFragment, paymentMethodNonce.getNonce(), String.valueOf(this.threeDSecureOptions.getDouble("amount")));
+          // } else {
             this.successCallback.invoke(paymentMethodNonce.getNonce());
-          }
+          // }
           break;
         case BraintreePaymentActivity.BRAINTREE_RESULT_DEVELOPER_ERROR:
         case BraintreePaymentActivity.BRAINTREE_RESULT_SERVER_ERROR:
