@@ -13,7 +13,6 @@
 #import "BraintreeCore.h"
 #import "BraintreePayPal.h"
 #import "BraintreeCard.h"
-#import "Braintree3DSecure.h"
 #import "BTDataCollector.h"
 #import "PPDataCollector.h"
 
