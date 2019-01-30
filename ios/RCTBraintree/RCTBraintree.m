@@ -137,7 +137,6 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
     BTCard *card = [[BTCard alloc] initWithParameters:parameters];
     card.shouldValidate = NO;
 
-    NSLog(@"dictionary data %@",parameters);
 
     [cardClient tokenizeCard:card
                   completion:^(BTCardNonce *tokenizedCard, NSError *error) {
