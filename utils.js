@@ -1,6 +1,8 @@
 // @flow
 
-import { Platform } from 'react-native';
+import {
+  Platform
+} from 'react-native';
 
 import type {
   CardParameters,
@@ -21,7 +23,6 @@ export function mapParameters(
     number: parameters.number,
     cvv: parameters.cvv,
     expirationDate: parameters.expirationDate,
-    cardholderName: parameters.cardholderName,
     billingAddress: {
       postalCode: parameters.postalCode,
       streetAddress: parameters.streetAddress,

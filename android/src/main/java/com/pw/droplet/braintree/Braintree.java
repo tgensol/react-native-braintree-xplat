@@ -141,7 +141,7 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
     this.errorCallback = errorCallback;
 
     CardBuilder cardBuilder = new CardBuilder()
-      .validate(true);
+      .validate(false);
 
     if (parameters.hasKey("number"))
       cardBuilder.cardNumber(parameters.getString("number"));

@@ -12,6 +12,10 @@
     bool runCallback;
 }
 
++ (BOOL)requiresMainQueueSetup {
+    return YES;
+}
+
 static NSString *URLScheme;
 
 + (instancetype)sharedInstance {
@@ -135,7 +139,7 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
 {
     BTCardClient *cardClient = [[BTCardClient alloc] initWithAPIClient: self.braintreeClient];
     BTCard *card = [[BTCard alloc] initWithParameters:parameters];
-    card.shouldValidate = YES;
+    card.shouldValidate = NO;
 
     [cardClient tokenizeCard:card
                   completion:^(BTCardNonce *tokenizedCard, NSError *error) {

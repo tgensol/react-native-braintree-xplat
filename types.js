@@ -22,6 +22,8 @@ export type CardParameters = {
 export type IOSCardParameters = {
   number: string,
   cvv: string,
+  expirationMonth: string,
+  expirationYear: string,
   expirationDate: string,
   cardholderName: string,
   billingAddress: {
