@@ -14,4 +14,5 @@ Pod::Spec.new do |s|
   s.source_files     = 'RCTBraintree/**/*.{h,m}'
   s.dependency         'React'
   s.dependency 'BraintreeDropIn'
+  s.dependency 'Braintree/PaymentFlow'
 end
