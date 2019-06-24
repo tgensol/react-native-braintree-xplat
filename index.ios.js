@@ -17,9 +17,9 @@ import type {
 const RCTBraintree = NativeModules.Braintree;
 
 var Braintree = {
-  setupWithURLScheme(token, urlscheme) {
+  setupWithURLScheme(serverUrl, urlscheme) {
     return new Promise(function (resolve, reject) {
-      RCTBraintree.setupWithURLScheme(token, urlscheme, function (success) {
+      RCTBraintree.setupWithURLScheme(serverUrl, urlscheme, function (success) {
         success == true ? resolve(true) : reject('Invalid Token');
       });
     });
