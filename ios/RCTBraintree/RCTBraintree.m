@@ -38,18 +38,27 @@ static NSString *URLScheme;
 
 RCT_EXPORT_MODULE();
 
-RCT_EXPORT_METHOD(setupWithURLScheme:(NSString *)clientToken urlscheme:(NSString*)urlscheme callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(setupWithURLScheme:(NSString *)serverUrl urlscheme:(NSString*)urlscheme callback:(RCTResponseSenderBlock)callback)
 {
     URLScheme = urlscheme;
     [BTAppSwitch setReturnURLScheme:urlscheme];
-    self.braintreeClient = [[BTAPIClient alloc] initWithAuthorization:clientToken];
-    if (self.braintreeClient == nil) {
-        callback(@[@false]);
-    }
-    else {
-        callback(@[@true]);
-    }
+
+    NSURL *clientTokenURL = [NSURL URLWithString:serverUrl];
+    NSMutableURLRequest *clientTokenRequest = [NSMutableURLRequest requestWithURL:clientTokenURL];
+    [clientTokenRequest setValue:@"text/plain" forHTTPHeaderField:@"Accept"];
+    
+    [[[NSURLSession sharedSession] dataTaskWithRequest:clientTokenRequest completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSString *clientToken = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            self.braintreeClient = [[BTAPIClient alloc] initWithAuthorization:clientToken];
+            if (self.braintreeClient == nil) {
+                callback(@[@false]);
+            }
+            else {
+                callback(@[@true]);
+            }
+    }] resume];
 }
+
 
 RCT_EXPORT_METHOD(setup:(NSString *)clientToken callback:(RCTResponseSenderBlock)callback)
 {
@@ -134,14 +143,15 @@ RCT_EXPORT_METHOD(showPayPalViewController:(RCTResponseSenderBlock)callback)
 RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTResponseSenderBlock)callback)
 {
     BTCardClient *cardClient = [[BTCardClient alloc] initWithAPIClient: self.braintreeClient];
+      NSLog(@"parameters braintreee %@", parameters);
     BTCard *card = [[BTCard alloc] initWithParameters:parameters];
     card.shouldValidate = NO;
-
+   NSLog(@"CARD braintreee %@ %@ %@", card, card.number, card.cardholderName);
 
     [cardClient tokenizeCard:card
                   completion:^(BTCardNonce *tokenizedCard, NSError *error) {
                       NSArray *args = @[];
-
+  NSLog(@"error braintreee %@", error);
                       if ( error == nil ) {
                           args = @[[NSNull null], tokenizedCard.nonce];
                       } else {

@@ -62,7 +62,7 @@ var Braintree = {
 
   getCardNonce(parameters: CardParameters = {}) {
     return new Promise(function (resolve, reject) {
-      RCTBraintree.getCardNonce(parameters, function (
+      RCTBraintree.getCardNonce(mapParameters(parameters), function (
         err,
         nonce
       ) {
