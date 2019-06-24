@@ -144,7 +144,11 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
 {
     BTCardClient *cardClient = [[BTCardClient alloc] initWithAPIClient: self.braintreeClient];
       NSLog(@"parameters braintreee %@", parameters);
-    BTCard *card = [[BTCard alloc] initWithParameters:parameters];
+//    BTCard *card = [[BTCard alloc] initWithParameters:parameters];
+    BTCard *card =  [[BTCard alloc] initWithNumber:parameters[@"number"]
+                                   expirationMonth:parameters[@"expirationMonth"]
+                                    expirationYear:parameters[@"expirationYear"]
+                                               cvv:parameters[@"cvv"]];
     card.shouldValidate = NO;
    NSLog(@"CARD braintreee %@ %@ %@", card, card.number, card.cardholderName);
 

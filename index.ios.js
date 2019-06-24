@@ -6,9 +6,6 @@ import {
   NativeModules,
   processColor
 } from 'react-native';
-import {
-  mapParameters
-} from './utils';
 
 import type {
   CardParameters
@@ -62,7 +59,7 @@ var Braintree = {
 
   getCardNonce(parameters: CardParameters = {}) {
     return new Promise(function (resolve, reject) {
-      RCTBraintree.getCardNonce(mapParameters(parameters), function (
+      RCTBraintree.getCardNonce(parameters, function (
         err,
         nonce
       ) {
