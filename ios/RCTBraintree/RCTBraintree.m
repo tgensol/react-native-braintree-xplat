@@ -143,19 +143,15 @@ RCT_EXPORT_METHOD(showPayPalViewController:(RCTResponseSenderBlock)callback)
 RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTResponseSenderBlock)callback)
 {
     BTCardClient *cardClient = [[BTCardClient alloc] initWithAPIClient: self.braintreeClient];
-      NSLog(@"parameters braintreee %@", parameters);
 //    BTCard *card = [[BTCard alloc] initWithParameters:parameters];
     BTCard *card =  [[BTCard alloc] initWithNumber:parameters[@"number"]
                                    expirationMonth:parameters[@"expirationMonth"]
                                     expirationYear:parameters[@"expirationYear"]
                                                cvv:parameters[@"cvv"]];
     card.shouldValidate = NO;
-   NSLog(@"CARD braintreee %@ %@ %@", card, card.number, card.cardholderName);
-
     [cardClient tokenizeCard:card
                   completion:^(BTCardNonce *tokenizedCard, NSError *error) {
                       NSArray *args = @[];
-  NSLog(@"error braintreee %@", error);
                       if ( error == nil ) {
                           args = @[[NSNull null], tokenizedCard.nonce];
                       } else {
