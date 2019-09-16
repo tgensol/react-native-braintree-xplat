@@ -15,4 +15,5 @@ Pod::Spec.new do |s|
   s.dependency         'React'
   s.dependency 'Braintree'
   s.dependency 'Braintree/DataCollector'
+   s.dependency 'Braintree/PaymentFlow'
 end
