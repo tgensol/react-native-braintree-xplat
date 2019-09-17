@@ -50,7 +50,7 @@ RCT_EXPORT_METHOD(setupWithURLScheme:(NSString *)serverUrl urlscheme:(NSString*)
     [[[NSURLSession sharedSession] dataTaskWithRequest:clientTokenRequest completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSString *clientToken = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         self.braintreeClient = [[BTAPIClient alloc] initWithAuthorization:clientToken];
-      
+        
         if (self.braintreeClient == nil) {
             callback(@[@false]);
         }
@@ -97,6 +97,80 @@ RCT_EXPORT_METHOD(showPayPalViewController:(RCTResponseSenderBlock)callback)
 }
 
 
+RCT_EXPORT_METHOD(check3DSecure: (NSDictionary *)parameters callback: (RCTResponseSenderBlock)callback)
+{
+    
+    BTThreeDSecureRequest *threeDSecureRequest = [[BTThreeDSecureRequest alloc] init];
+    threeDSecureRequest.amount = [NSDecimalNumber decimalNumberWithString: parameters[@"amount"]];
+    threeDSecureRequest.nonce =  parameters[@"nonce"];
+    
+    threeDSecureRequest.email = parameters[@"email"];
+    //                          threeDSecureRequest.versionRequested = BTThreeDSecureVersion2;
+    
+    BTThreeDSecurePostalAddress *address = [BTThreeDSecurePostalAddress new];
+    address.givenName =  parameters[@"firstname"]; // ASCII-printable characters required, else will throw a validation error
+    address.surname = parameters[@"lastname"]; // ASCII-printable characters required, else will throw a validation error
+    address.phoneNumber = parameters[@"phoneNumber"];
+    address.streetAddress = parameters[@"streetAddress"];
+    address.locality = parameters[@"locality"];
+    address.region = parameters[@"region"];
+    address.postalCode = parameters[@"postalCode"];
+    //                          address.countryCodeAlpha2 = @"US";
+    
+    //                          BTThreeDSecurePostalAddress *address = [BTThreeDSecurePostalAddress new];
+    //                          address.givenName = @"Jill"; // ASCII-printable characters required, else will throw a validation error
+    //                          address.surname = @"Doe"; // ASCII-printable characters required, else will throw a validation error
+    //                          address.phoneNumber = @"5551234567";
+    //                          address.streetAddress = @"555 Smith St";
+    //                          address.extendedAddress = @"#2";
+    //                          address.locality = @"Chicago";
+    //                          address.region = @"IL";
+    //                          address.postalCode = @"12345";
+    //                          address.countryCodeAlpha2 = @"US";
+    
+    threeDSecureRequest.billingAddress = address;
+    // Optional additional information.
+    // For best results, provide as many of these elements as possible.
+    BTThreeDSecureAdditionalInformation *additionalInformation = [BTThreeDSecureAdditionalInformation new];
+    additionalInformation.shippingAddress = address;
+    threeDSecureRequest.additionalInformation = additionalInformation;
+    
+    //
+    self.paymentFlowDriver = [[BTPaymentFlowDriver alloc] initWithAPIClient:self.braintreeClient];
+    self.paymentFlowDriver.viewControllerPresentingDelegate = self;
+    
+    
+    [self.paymentFlowDriver startPaymentFlow:threeDSecureRequest completion:^(BTPaymentFlowResult * _Nonnull result, NSError * _Nonnull error) {
+        NSArray *args = @[];
+        if (error) {
+            NSLog(@"Finally error %@", error.description);
+            args = @[error.localizedDescription, [NSNull null]];
+            // Handle error
+        } else if (result) {
+            NSLog(@"Finally %@", result);
+            BTThreeDSecureResult *threeDSecureResult = (BTThreeDSecureResult *)result;
+            
+            if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShiftPossible) {
+                if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShifted) {
+                    args = @[[NSNull null], @true];
+                } else {
+                    // 3D Secure authentication failed
+                    //   args = @[serialisationErr.description, [NSNull null]];
+                    args = @[@"failed", [NSNull null]];
+                }
+            }else{
+                args = @[[NSNull null], @true];
+            }
+        }else{
+            // 3D Secure authentication was not possible
+            args = @[[NSNull null], @true];
+        }
+        callback(args);
+    }];
+    
+}
+
+
 RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTResponseSenderBlock)callback)
 {
     BTCardClient *cardClient = [[BTCardClient alloc] initWithAPIClient: self.braintreeClient];
@@ -114,8 +188,8 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
                           threeDSecureRequest.nonce = tokenizedCard.nonce;
                           
                           threeDSecureRequest.email = parameters[@"email"];
-//                          threeDSecureRequest.versionRequested = BTThreeDSecureVersion2;
-
+                          //                          threeDSecureRequest.versionRequested = BTThreeDSecureVersion2;
+                          
                           BTThreeDSecurePostalAddress *address = [BTThreeDSecurePostalAddress new];
                           address.givenName =  parameters[@"firstname"]; // ASCII-printable characters required, else will throw a validation error
                           address.surname = parameters[@"lastname"]; // ASCII-printable characters required, else will throw a validation error
@@ -124,19 +198,19 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
                           address.locality = parameters[@"locality"];
                           address.region = parameters[@"region"];
                           address.postalCode = parameters[@"postalCode"];
-//                          address.countryCodeAlpha2 = @"US";
-
-//                          BTThreeDSecurePostalAddress *address = [BTThreeDSecurePostalAddress new];
-//                          address.givenName = @"Jill"; // ASCII-printable characters required, else will throw a validation error
-//                          address.surname = @"Doe"; // ASCII-printable characters required, else will throw a validation error
-//                          address.phoneNumber = @"5551234567";
-//                          address.streetAddress = @"555 Smith St";
-//                          address.extendedAddress = @"#2";
-//                          address.locality = @"Chicago";
-//                          address.region = @"IL";
-//                          address.postalCode = @"12345";
-//                          address.countryCodeAlpha2 = @"US";
-
+                          //                          address.countryCodeAlpha2 = @"US";
+                          
+                          //                          BTThreeDSecurePostalAddress *address = [BTThreeDSecurePostalAddress new];
+                          //                          address.givenName = @"Jill"; // ASCII-printable characters required, else will throw a validation error
+                          //                          address.surname = @"Doe"; // ASCII-printable characters required, else will throw a validation error
+                          //                          address.phoneNumber = @"5551234567";
+                          //                          address.streetAddress = @"555 Smith St";
+                          //                          address.extendedAddress = @"#2";
+                          //                          address.locality = @"Chicago";
+                          //                          address.region = @"IL";
+                          //                          address.postalCode = @"12345";
+                          //                          address.countryCodeAlpha2 = @"US";
+                          
                           threeDSecureRequest.billingAddress = address;
                           // Optional additional information.
                           // For best results, provide as many of these elements as possible.
@@ -144,40 +218,40 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
                           additionalInformation.shippingAddress = address;
                           threeDSecureRequest.additionalInformation = additionalInformation;
                           
-//
+                          //
                           self.paymentFlowDriver = [[BTPaymentFlowDriver alloc] initWithAPIClient:self.braintreeClient];
                           self.paymentFlowDriver.viewControllerPresentingDelegate = self;
                           
-                        
-                              [self.paymentFlowDriver startPaymentFlow:threeDSecureRequest completion:^(BTPaymentFlowResult * _Nonnull result, NSError * _Nonnull error) {
-                                   NSArray *args = @[];
-                                  if (error) {
-                                        NSLog(@"Finally error %@", error.description);
-                                         args = @[error.localizedDescription, [NSNull null]];
-                                      // Handle error
-                                  } else if (result) {
- NSLog(@"Finally %@", result);
-                                             BTThreeDSecureResult *threeDSecureResult = (BTThreeDSecureResult *)result;
-                                      
-                                                                                   if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShiftPossible) {
-                                                                                       if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShifted) {
-                                                                                           args = @[[NSNull null], threeDSecureResult.tokenizedCard.nonce];
-                                                                                       } else {
-                                                                                           // 3D Secure authentication failed
-                                                                                           //   args = @[serialisationErr.description, [NSNull null]];
-                                                                                           args = @[@"failed", [NSNull null]];
-                                                                                       }
-                                                                                   }else{
-                                                                                         args = @[[NSNull null], threeDSecureResult.tokenizedCard.nonce];
-                                                                                   }
+                          
+                          [self.paymentFlowDriver startPaymentFlow:threeDSecureRequest completion:^(BTPaymentFlowResult * _Nonnull result, NSError * _Nonnull error) {
+                              NSArray *args = @[];
+                              if (error) {
+                                  NSLog(@"Finally error %@", error.description);
+                                  args = @[error.localizedDescription, [NSNull null]];
+                                  // Handle error
+                              } else if (result) {
+                                  NSLog(@"Finally %@", result);
+                                  BTThreeDSecureResult *threeDSecureResult = (BTThreeDSecureResult *)result;
+                                  
+                                  if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShiftPossible) {
+                                      if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShifted) {
+                                          args = @[[NSNull null], threeDSecureResult.tokenizedCard.nonce];
+                                      } else {
+                                          // 3D Secure authentication failed
+                                          //   args = @[serialisationErr.description, [NSNull null]];
+                                          args = @[@"failed", [NSNull null]];
+                                      }
                                   }else{
-                                      // 3D Secure authentication was not possible
-                                                                            args = @[[NSNull null], tokenizedCard.nonce];
+                                      args = @[[NSNull null], threeDSecureResult.tokenizedCard.nonce];
                                   }
-                                  callback(args);
-                              }];
-                    
-
+                              }else{
+                                  // 3D Secure authentication was not possible
+                                  args = @[[NSNull null], tokenizedCard.nonce];
+                              }
+                              callback(args);
+                          }];
+                          
+                          
                       } else {
                           
                           NSArray *args = @[];

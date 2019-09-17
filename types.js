@@ -18,6 +18,7 @@ export type CardParameters = {
   region: string,
   streetAddress: string,
   extendedAddress: string,
+  token: string
 };
 
 export type IOSCardParameters = {
@@ -27,6 +28,7 @@ export type IOSCardParameters = {
   expirationYear: string,
   expirationDate: string,
   cardholderName: string,
+  token: string
   amount: string
   billingAddress: {
     postalCode: string,

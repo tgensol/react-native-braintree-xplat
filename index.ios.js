@@ -56,7 +56,18 @@ var Braintree = {
       });
     });
   },
-
+  check3DSecuree(parameters: CardParameters = {}) {
+    return new Promise(function (resolve, reject) {
+      RCTBraintree.check3DSecuree(parameters, function (
+        err,
+        nonce
+      ) {
+        nonce !== null ?
+          resolve(nonce) :
+          reject(err);
+      });
+    });
+  },
   getCardNonce(parameters: CardParameters = {}) {
     return new Promise(function (resolve, reject) {
       RCTBraintree.getCardNonce(parameters, function (
