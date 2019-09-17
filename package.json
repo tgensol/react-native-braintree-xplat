@@ -13,5 +13,6 @@
   "respository": {
     "type": "git",
     "url": "git@github.com:kraffslol/react-native-braintree-xplat.git"
-  }
+  },
+  "dependencies": {}
 }
