@@ -193,7 +193,7 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
     if (parameters.hasKey("extendedAddress"))
       cardBuilder.extendedAddress(parameters.getString("extendedAddress"));
 
-ThreeDSecure.performVerification(this.mBraintreeFragment,, cardBuilder, parameters.getString("amount"));
+ThreeDSecure.performVerification(this.mBraintreeFragment, cardBuilder, parameters.getString("amount"));
     // Card.tokenize(this.mBraintreeFragment, cardBuilder);
   }
   @ReactMethod
