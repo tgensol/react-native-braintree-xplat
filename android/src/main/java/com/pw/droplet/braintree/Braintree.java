@@ -80,8 +80,11 @@ public class Braintree extends ReactContextBaseJavaModule  implements ActivityEv
 Request request = new Request.Builder()
                      .url(url)
                      .build();
+                     try {
 Response response = client.newCall(request).execute();
+                    
         this.mBraintreeFragment = BraintreeFragment.newInstance(getCurrentActivity(),  response.body().string());
+         }catch(IOException e){}
             
                 this.mBraintreeFragment.addListener(new BraintreeCancelListener() {
             @Override
@@ -92,7 +95,6 @@ Response response = client.newCall(request).execute();
       this.mBraintreeFragment.addListener(new PaymentMethodNonceCreatedListener() {
         @Override
         public void onPaymentMethodNonceCreated(PaymentMethodNonce paymentMethodNonce) {
-      // if (threeDSecureOptions != null && paymentMethodNonce instanceof CardNonce) {
             CardNonce cardNonce = (CardNonce) paymentMethodNonce;
             if (!cardNonce.getThreeDSecureInfo().isLiabilityShiftPossible()) {
               nonceErrorCallback("3DSECURE_NOT_ABLE_TO_SHIFT_LIABILITY");
@@ -101,9 +103,6 @@ Response response = client.newCall(request).execute();
             } else {
               nonceCallback(paymentMethodNonce.getNonce());
             }
-          // } else {
-          //   nonceCallback(paymentMethodNonce.getNonce());
-          // }
         }
       });
       

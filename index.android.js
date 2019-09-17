@@ -15,7 +15,7 @@ module.exports = {
   getCardNonce(parameters = {}) {
     return new Promise(function (resolve, reject) {
       Braintree.getCardNonce(
-        mapParameters(parameters),
+        parameters,
         nonce => resolve(nonce),
         err => reject(err)
       );
