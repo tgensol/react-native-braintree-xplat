@@ -72,14 +72,16 @@ RCT_EXPORT_METHOD(setup:(NSString *)clientToken callback:(RCTResponseSenderBlock
     }
 }
 
-RCT_EXPORT_METHOD(showPayPalViewController:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(showPayPalViewController:((NSString *)amount, RCTResponseSenderBlock)callback)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         
         BTPayPalDriver *payPalDriver = [[BTPayPalDriver alloc] initWithAPIClient:self.braintreeClient];
         payPalDriver.viewControllerPresentingDelegate = self;
-        
-        [payPalDriver authorizeAccountWithCompletion:^(BTPayPalAccountNonce *tokenizedPayPalAccount, NSError *error) {
+        BTPayPalRequest *request= [[BTPayPalRequest alloc] initWithAmount:amount];
+        request.currencyCode = @"EUR"; // Optional; see BTPayPalRequest.h for other options
+
+         [payPalDriver requestOneTimePayment:request completion:^(BTPayPalAccountNonce * _Nullable tokenizedPayPalAccount, NSError * _Nullable error) {
             NSMutableArray *args = @[[NSNull null]];
             if ( error == nil && tokenizedPayPalAccount != nil ) {
                 args = [@[[NSNull null], tokenizedPayPalAccount.nonce, tokenizedPayPalAccount.email, tokenizedPayPalAccount.firstName, tokenizedPayPalAccount.lastName] mutableCopy];

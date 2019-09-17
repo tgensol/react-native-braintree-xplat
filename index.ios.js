@@ -30,25 +30,6 @@ var Braintree = {
     });
   },
 
-  showPaymentViewController(config = {}) {
-    var options = {
-      tintColor: processColor(config.tintColor),
-      bgColor: processColor(config.bgColor),
-      barBgColor: processColor(config.barBgColor),
-      barTintColor: processColor(config.barTintColor),
-      callToActionText: config.callToActionText,
-      title: config.title,
-      description: config.description,
-      amount: config.amount,
-      threeDSecure: config.threeDSecure,
-    };
-    return new Promise(function (resolve, reject) {
-      RCTBraintree.showPaymentViewController(options, function (err, nonce) {
-        nonce != null ? resolve(nonce) : reject(err);
-      });
-    });
-  },
-
   showPayPalViewController(amount: string) {
     return new Promise(function (resolve, reject) {
       RCTBraintree.showPayPalViewController(function (err, nonce) {
