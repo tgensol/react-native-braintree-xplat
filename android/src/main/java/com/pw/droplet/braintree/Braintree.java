@@ -4,6 +4,15 @@ import java.util.Map;
 import java.util.HashMap;
 import android.util.Log;
 import com.braintreepayments.api.interfaces.BraintreeCancelListener;
+
+import java.io.IOException;
+
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+
 import com.google.gson.Gson;
 import android.os.Bundle;
 import android.content.Intent;
@@ -63,9 +72,16 @@ public class Braintree extends ReactContextBaseJavaModule  implements ActivityEv
 
 
   @ReactMethod
-  public void setup(final String token, final Callback successCallback, final Callback errorCallback) {
+  public void setup(final String url, final Callback successCallback, final Callback errorCallback) {
   try {
-      this.mBraintreeFragment = BraintreeFragment.newInstance(getCurrentActivity(), token);
+     Log.d("PAYMENT_REQUEST",url);
+  OkHttpClient client = new OkHttpClient();
+
+Request request = new Request.Builder()
+                     .url(url)
+                     .build();
+Response response = client.newCall(request).execute();
+        this.mBraintreeFragment = BraintreeFragment.newInstance(getCurrentActivity(),  response.body().string());
             
                 this.mBraintreeFragment.addListener(new BraintreeCancelListener() {
             @Override
@@ -90,9 +106,11 @@ public class Braintree extends ReactContextBaseJavaModule  implements ActivityEv
           // }
         }
       });
+      
       this.mBraintreeFragment.addListener(new BraintreeErrorListener() {
         @Override
         public void onError(Exception error) {
+              Log.e("PAYMENT_REQUEST", "I got an error", error);
           if (error instanceof ErrorWithResponse) {
             ErrorWithResponse errorWithResponse = (ErrorWithResponse) error;
             BraintreeError cardErrors = errorWithResponse.errorFor("creditCard");
@@ -129,8 +147,9 @@ public class Braintree extends ReactContextBaseJavaModule  implements ActivityEv
         }
       });
       this.setToken(token);
-      successCallback.invoke(this.getToken());
+      successCallback.invoke(this.getToken()); 
       } catch (InvalidArgumentException e) {
+              Log.e("PAYMENT_REQUEST", "I got an error", e);
       errorCallback.invoke(e.getMessage());
     }
   }
@@ -189,11 +208,11 @@ ThreeDSecure.performVerification(this.mBraintreeFragment, cardBuilder, parameter
   }
   @ReactMethod
   public void check3DSecure(final ReadableMap parameters, final Callback successCallback, final Callback errorCallback) {
-     Log.d("PAYMENT_REQUEST check3DSecure",""+parameters.getString("token"));
+     Log.d("PAYMENT_REQUEST",parameters.getString("nonce"));
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
 ThreeDSecureRequest threeDSecureRequest = new ThreeDSecureRequest()
-        .nonce(parameters.getString("token"))
+        .nonce(parameters.getString("nonce"))
         .amount(parameters.getString("amount"));
 
 ThreeDSecure.performVerification(this.mBraintreeFragment, threeDSecureRequest);
@@ -220,7 +239,7 @@ ThreeDSecure.performVerification(this.mBraintreeFragment, threeDSecureRequest);
   }
   @Override
   public void onActivityResult(Activity activity, final int requestCode, final int resultCode, final Intent data) {
-    Log.d("PAYMENT_REQUEST",""+PAYMENT_REQUEST);
+    Log.d("PAYMENT_REQUEST","onActivityResult");
     if (requestCode == PAYMENT_REQUEST) {
       switch (resultCode) {
         case Activity.RESULT_OK:
