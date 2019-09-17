@@ -8,11 +8,11 @@ import com.google.gson.Gson;
 import android.os.Bundle;
 import android.content.Intent;
 import android.content.Context;
-import androidx.appcompat.app.AppCompatActivity;
 import com.braintreepayments.api.ThreeDSecure;
 import com.braintreepayments.api.models.ThreeDSecureRequest;
 import com.braintreepayments.api.models.PaymentMethodNonce;
 import com.braintreepayments.api.BraintreeFragment;
+import com.braintreepayments.api.BraintreePaymentActivity;
 import android.app.Activity;
 import com.braintreepayments.api.exceptions.InvalidArgumentException;
 import com.braintreepayments.api.exceptions.BraintreeError;
@@ -24,14 +24,14 @@ import com.braintreepayments.api.models.PayPalRequest;
 import com.braintreepayments.api.interfaces.PaymentMethodNonceCreatedListener;
 import com.braintreepayments.api.interfaces.BraintreeErrorListener;
 import com.braintreepayments.api.models.CardNonce;
-
+import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 
-public class Braintree extends ReactContextBaseJavaModule {
+public class Braintree extends ReactContextBaseJavaModule  implements ActivityEventListener {
   private static final int PAYMENT_REQUEST = 1706816330;
   private String token;
 
@@ -39,14 +39,13 @@ public class Braintree extends ReactContextBaseJavaModule {
   private Callback errorCallback;
 
   private Context mActivityContext;
- private static ReactApplicationContext reactContext;
   private BraintreeFragment mBraintreeFragment;
 
   private ReadableMap threeDSecureOptions;
 
   public Braintree(ReactApplicationContext reactContext) {
     super(reactContext);
-      reactContext = reactContext;
+      reactContext.addActivityEventListener(this);
   }
 
   @Override
@@ -65,7 +64,8 @@ public class Braintree extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setup(final String token, final Callback successCallback, final Callback errorCallback) {
-        this.mBraintreeFragment = BraintreeFragment.newInstance(getCurrentActivity(), token);
+  try {
+      this.mBraintreeFragment = BraintreeFragment.newInstance(getCurrentActivity(), token);
             
                 this.mBraintreeFragment.addListener(new BraintreeCancelListener() {
             @Override
@@ -130,10 +130,13 @@ public class Braintree extends ReactContextBaseJavaModule {
       });
       this.setToken(token);
       successCallback.invoke(this.getToken());
+      } catch (InvalidArgumentException e) {
+      errorCallback.invoke(e.getMessage());
+    }
   }
 
   @ReactMethod
-  public void getCardNonce(final ReadableMap parameters, final Callback successCallback, final Callback errorCallback) {
+  public void getCardNonce(final ReadableMap parameters, final Callback successCallback, final Callback errorCallback)  {
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
 
@@ -215,7 +218,36 @@ ThreeDSecure.performVerification(this.mBraintreeFragment, threeDSecureRequest);
 
   PayPal.requestOneTimePayment(this.mBraintreeFragment, request);
   }
+  @Override
+  public void onActivityResult(Activity activity, final int requestCode, final int resultCode, final Intent data) {
+    if (requestCode == PAYMENT_REQUEST) {
+      switch (resultCode) {
+        case Activity.RESULT_OK:
+          PaymentMethodNonce paymentMethodNonce = data.getParcelableExtra(
+            BraintreePaymentActivity.EXTRA_PAYMENT_METHOD_NONCE
+          );
 
+          if (this.threeDSecureOptions != null) {
+            ThreeDSecure.performVerification(this.mBraintreeFragment, paymentMethodNonce.getNonce(), String.valueOf(this.threeDSecureOptions.getDouble("amount")));
+          } else {
+            this.successCallback.invoke(paymentMethodNonce.getNonce());
+          }
+          break;
+        case BraintreePaymentActivity.BRAINTREE_RESULT_DEVELOPER_ERROR:
+        case BraintreePaymentActivity.BRAINTREE_RESULT_SERVER_ERROR:
+        case BraintreePaymentActivity.BRAINTREE_RESULT_SERVER_UNAVAILABLE:
+          this.errorCallback.invoke(
+            data.getSerializableExtra(BraintreePaymentActivity.EXTRA_ERROR_MESSAGE)
+          );
+          break;
+        case Activity.RESULT_CANCELED:
+          this.errorCallback.invoke("USER_CANCELLATION");
+          break;
+        default:
+          break;
+      }
+    }
+  }
 
   public void onNewIntent(Intent intent){}
 }

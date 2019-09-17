@@ -24,6 +24,6 @@ dependencies {
     implementation "com.facebook.react:react-native:+"
     compile 'com.braintreepayments.api:braintree:2.22.0'
     // implementation 'com.braintreepayments.api:three-d-secure:3.4.2'
-    // implementation 'com.braintreepayments.api:drop-in:4.3.1'
+    implementation 'com.braintreepayments.api:drop-in:2.+'
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
 }
