@@ -181,8 +181,12 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
     card.shouldValidate = NO;
     [cardClient tokenizeCard:card
                   completion:^(BTCardNonce *tokenizedCard, NSError *error) {
-                      
                       if ( error == nil ) {
+                          if(parameters[@"amount"] == nil){
+                               NSArray *args = @[];
+                               args = @[[NSNull null], tokenizedCard.nonce];
+                               callback(args);
+                          }else{
                           BTThreeDSecureRequest *threeDSecureRequest = [[BTThreeDSecureRequest alloc] init];
                           threeDSecureRequest.amount = [NSDecimalNumber decimalNumberWithString: parameters[@"amount"]];
                           threeDSecureRequest.nonce = tokenizedCard.nonce;
@@ -250,7 +254,7 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
                               }
                               callback(args);
                           }];
-                          
+                          }
                           
                       } else {
                           
