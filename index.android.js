@@ -3,10 +3,6 @@
 import {
   NativeModules
 } from 'react-native';
-import {
-  mapParameters
-} from './utils';
-
 const Braintree = NativeModules.Braintree;
 
 module.exports = {
@@ -27,7 +23,8 @@ module.exports = {
   },
   check3DSecure(parameters = {}) {
     return new Promise(function (resolve, reject) {
-      Braintree.check3DSecure(mapParameters(parameters), nonce => resolve(nonce),
+      console.log(parameters)
+      Braintree.check3DSecure(parameters, nonce => resolve(nonce),
         err => reject(err));
     });
   },

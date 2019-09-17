@@ -2,7 +2,7 @@ package com.pw.droplet.braintree;
 
 import java.util.Map;
 import java.util.HashMap;
-
+import android.util.Log;
 import com.braintreepayments.api.interfaces.BraintreeCancelListener;
 import com.google.gson.Gson;
 import android.os.Bundle;
@@ -76,17 +76,17 @@ public class Braintree extends ReactContextBaseJavaModule  implements ActivityEv
       this.mBraintreeFragment.addListener(new PaymentMethodNonceCreatedListener() {
         @Override
         public void onPaymentMethodNonceCreated(PaymentMethodNonce paymentMethodNonce) {
-          // if (threeDSecureOptions != null && paymentMethodNonce instanceof CardNonce) {
-          //   CardNonce cardNonce = (CardNonce) paymentMethodNonce;
-          //   if (!cardNonce.getThreeDSecureInfo().isLiabilityShiftPossible()) {
-          //     nonceErrorCallback("3DSECURE_NOT_ABLE_TO_SHIFT_LIABILITY");
-          //   } else if (!cardNonce.getThreeDSecureInfo().isLiabilityShifted()) {
-          //     nonceErrorCallback("3DSECURE_LIABILITY_NOT_SHIFTED");
-          //   } else {
-          //     nonceCallback(paymentMethodNonce.getNonce());
-          //   }
+      // if (threeDSecureOptions != null && paymentMethodNonce instanceof CardNonce) {
+            CardNonce cardNonce = (CardNonce) paymentMethodNonce;
+            if (!cardNonce.getThreeDSecureInfo().isLiabilityShiftPossible()) {
+              nonceErrorCallback("3DSECURE_NOT_ABLE_TO_SHIFT_LIABILITY");
+            } else if (!cardNonce.getThreeDSecureInfo().isLiabilityShifted()) {
+              nonceErrorCallback("3DSECURE_LIABILITY_NOT_SHIFTED");
+            } else {
+              nonceCallback(paymentMethodNonce.getNonce());
+            }
           // } else {
-            nonceCallback(paymentMethodNonce.getNonce());
+          //   nonceCallback(paymentMethodNonce.getNonce());
           // }
         }
       });
@@ -183,13 +183,13 @@ public class Braintree extends ReactContextBaseJavaModule  implements ActivityEv
 
     if (parameters.hasKey("extendedAddress"))
       cardBuilder.extendedAddress(parameters.getString("extendedAddress"));
-
+ Log.d("PAYMENT_REQUEST","ICI");
 ThreeDSecure.performVerification(this.mBraintreeFragment, cardBuilder, parameters.getString("amount"));
     // Card.tokenize(this.mBraintreeFragment, cardBuilder);
   }
   @ReactMethod
   public void check3DSecure(final ReadableMap parameters, final Callback successCallback, final Callback errorCallback) {
-    
+     Log.d("PAYMENT_REQUEST check3DSecure",""+parameters.getString("token"));
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
 ThreeDSecureRequest threeDSecureRequest = new ThreeDSecureRequest()
@@ -208,11 +208,11 @@ ThreeDSecure.performVerification(this.mBraintreeFragment, threeDSecureRequest);
   }
 
   @ReactMethod
-  public void paypalRequest(final String amount, final Callback successCallback, final Callback errorCallback) {
+  public void paypalRequest(final Callback successCallback, final Callback errorCallback) {
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     // PayPal.authorizeAccount(this.mBraintreeFragment);
-      PayPalRequest request = new PayPalRequest(amount)
+      PayPalRequest request = new PayPalRequest("1")
     .currencyCode("EUR")
     .intent(PayPalRequest.INTENT_AUTHORIZE);
 
@@ -220,6 +220,7 @@ ThreeDSecure.performVerification(this.mBraintreeFragment, threeDSecureRequest);
   }
   @Override
   public void onActivityResult(Activity activity, final int requestCode, final int resultCode, final Intent data) {
+    Log.d("PAYMENT_REQUEST",""+PAYMENT_REQUEST);
     if (requestCode == PAYMENT_REQUEST) {
       switch (resultCode) {
         case Activity.RESULT_OK:
