@@ -5,22 +5,22 @@ import java.util.HashMap;
 
 import com.braintreepayments.api.interfaces.BraintreeCancelListener;
 import com.google.gson.Gson;
-
+import android.os.Bundle;
 import android.content.Intent;
 import android.content.Context;
-import android.app.Activity;
-
+import androidx.appcompat.app.AppCompatActivity;
 import com.braintreepayments.api.ThreeDSecure;
-import com.braintreepayments.api.PaymentRequest;
+import com.braintreepayments.api.models.ThreeDSecureRequest;
 import com.braintreepayments.api.models.PaymentMethodNonce;
-import com.braintreepayments.api.BraintreePaymentActivity;
 import com.braintreepayments.api.BraintreeFragment;
+import android.app.Activity;
 import com.braintreepayments.api.exceptions.InvalidArgumentException;
 import com.braintreepayments.api.exceptions.BraintreeError;
 import com.braintreepayments.api.exceptions.ErrorWithResponse;
 import com.braintreepayments.api.models.CardBuilder;
 import com.braintreepayments.api.Card;
 import com.braintreepayments.api.PayPal;
+import com.braintreepayments.api.models.PayPalRequest;
 import com.braintreepayments.api.interfaces.PaymentMethodNonceCreatedListener;
 import com.braintreepayments.api.interfaces.BraintreeErrorListener;
 import com.braintreepayments.api.models.CardNonce;
@@ -29,10 +29,9 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.ReadableMap;
 
-public class Braintree extends ReactContextBaseJavaModule implements ActivityEventListener {
+public class Braintree extends ReactContextBaseJavaModule {
   private static final int PAYMENT_REQUEST = 1706816330;
   private String token;
 
@@ -40,14 +39,14 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
   private Callback errorCallback;
 
   private Context mActivityContext;
-
+ private static ReactApplicationContext reactContext;
   private BraintreeFragment mBraintreeFragment;
 
   private ReadableMap threeDSecureOptions;
 
   public Braintree(ReactApplicationContext reactContext) {
     super(reactContext);
-    reactContext.addActivityEventListener(this);
+      reactContext = reactContext;
   }
 
   @Override
@@ -63,16 +62,17 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
     this.token = token;
   }
 
+
   @ReactMethod
   public void setup(final String token, final Callback successCallback, final Callback errorCallback) {
-    try {
-      this.mBraintreeFragment = BraintreeFragment.newInstance(getCurrentActivity(), token);
-      this.mBraintreeFragment.addListener(new BraintreeCancelListener() {
-        @Override
-        public void onCancel(int requestCode) {
-          nonceErrorCallback("USER_CANCELLATION");
-        }
-      });
+        this.mBraintreeFragment = BraintreeFragment.newInstance(getCurrentActivity(), token);
+            
+                this.mBraintreeFragment.addListener(new BraintreeCancelListener() {
+            @Override
+            public void onCancel(int requestCode) {
+              nonceErrorCallback("USER_CANCELLATION");
+            }
+          });
       this.mBraintreeFragment.addListener(new PaymentMethodNonceCreatedListener() {
         @Override
         public void onPaymentMethodNonceCreated(PaymentMethodNonce paymentMethodNonce) {
@@ -130,9 +130,6 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
       });
       this.setToken(token);
       successCallback.invoke(this.getToken());
-    } catch (InvalidArgumentException e) {
-      errorCallback.invoke(e.getMessage());
-    }
   }
 
   @ReactMethod
@@ -166,17 +163,8 @@ public class Braintree extends ReactContextBaseJavaModule implements ActivityEve
     if (parameters.hasKey("company"))
       cardBuilder.company(parameters.getString("company"));
 
-    if (parameters.hasKey("countryName"))
-      cardBuilder.countryName(parameters.getString("countryName"));
-
-    if (parameters.hasKey("countryCodeAlpha2"))
-      cardBuilder.countryCodeAlpha2(parameters.getString("countryCodeAlpha2"));
-
-    if (parameters.hasKey("countryCodeAlpha3"))
-      cardBuilder.countryCodeAlpha3(parameters.getString("countryCodeAlpha3"));
-
-    if (parameters.hasKey("countryCodeNumeric"))
-      cardBuilder.countryCodeNumeric(parameters.getString("countryCodeNumeric"));
+    if (parameters.hasKey("countryCode"))
+      cardBuilder.countryCode(parameters.getString("countryCode"));
 
     if (parameters.hasKey("locality"))
       cardBuilder.locality(parameters.getString("locality"));
@@ -217,86 +205,17 @@ ThreeDSecure.performVerification(this.mBraintreeFragment, threeDSecureRequest);
   }
 
   @ReactMethod
-  public void paymentRequest(final ReadableMap options, final Callback successCallback, final Callback errorCallback) {
-    this.successCallback = successCallback;
-    this.errorCallback = errorCallback;
-    PaymentRequest paymentRequest = null;
-
-    String callToActionText = null;
-    String title = null;
-    String description = null;
-    String amount = null;
-
-    if (options.hasKey("callToActionText")) {
-      callToActionText = options.getString("callToActionText");
-    }
-
-    if (options.hasKey("title")) {
-      title = options.getString("title");
-    }
-
-    if (options.hasKey("description")) {
-      description = options.getString("description");
-    }
-
-    if (options.hasKey("amount")) {
-      amount = options.getString("amount");
-    }
-
-    if (options.hasKey("threeDSecure")) {
-      this.threeDSecureOptions = options.getMap("threeDSecure");
-    }
-
-    paymentRequest = new PaymentRequest()
-      .submitButtonText(callToActionText)
-      .primaryDescription(title)
-      .secondaryDescription(description)
-      .amount(amount)
-      .clientToken(this.getToken());
-
-    (getCurrentActivity()).startActivityForResult(
-      paymentRequest.getIntent(getCurrentActivity()),
-      PAYMENT_REQUEST
-    );
-  }
-
-  @ReactMethod
   public void paypalRequest(final Callback successCallback, final Callback errorCallback) {
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
-    PayPal.authorizeAccount(this.mBraintreeFragment);
+    // PayPal.authorizeAccount(this.mBraintreeFragment);
+      PayPalRequest request = new PayPalRequest("1")
+    .currencyCode("EUR")
+    .intent(PayPalRequest.INTENT_AUTHORIZE);
+
+  PayPal.requestOneTimePayment(this.mBraintreeFragment, request);
   }
 
-  @Override
-  public void onActivityResult(Activity activity, final int requestCode, final int resultCode, final Intent data) {
-    if (requestCode == PAYMENT_REQUEST) {
-      switch (resultCode) {
-        case Activity.RESULT_OK:
-          PaymentMethodNonce paymentMethodNonce = data.getParcelableExtra(
-            BraintreePaymentActivity.EXTRA_PAYMENT_METHOD_NONCE
-          );
-
-          if (this.threeDSecureOptions != null) {
-            ThreeDSecure.performVerification(this.mBraintreeFragment, paymentMethodNonce.getNonce(), String.valueOf(this.threeDSecureOptions.getDouble("amount")));
-          } else {
-            this.successCallback.invoke(paymentMethodNonce.getNonce());
-          }
-          break;
-        case BraintreePaymentActivity.BRAINTREE_RESULT_DEVELOPER_ERROR:
-        case BraintreePaymentActivity.BRAINTREE_RESULT_SERVER_ERROR:
-        case BraintreePaymentActivity.BRAINTREE_RESULT_SERVER_UNAVAILABLE:
-          this.errorCallback.invoke(
-            data.getSerializableExtra(BraintreePaymentActivity.EXTRA_ERROR_MESSAGE)
-          );
-          break;
-        case Activity.RESULT_CANCELED:
-          this.errorCallback.invoke("USER_CANCELLATION");
-          break;
-        default:
-          break;
-      }
-    }
-  }
 
   public void onNewIntent(Intent intent){}
 }
