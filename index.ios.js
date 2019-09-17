@@ -56,9 +56,9 @@ var Braintree = {
       });
     });
   },
-  check3DSecuree(parameters: CardParameters = {}) {
+  check3DSecure(parameters: CardParameters = {}) {
     return new Promise(function (resolve, reject) {
-      RCTBraintree.check3DSecuree(parameters, function (
+      RCTBraintree.check3DSecure(parameters, function (
         err,
         nonce
       ) {
