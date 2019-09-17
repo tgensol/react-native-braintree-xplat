@@ -208,11 +208,11 @@ ThreeDSecure.performVerification(this.mBraintreeFragment, threeDSecureRequest);
   }
 
   @ReactMethod
-  public void paypalRequest(final Callback successCallback, final Callback errorCallback) {
+  public void paypalRequest(final String amount, final Callback successCallback, final Callback errorCallback) {
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     // PayPal.authorizeAccount(this.mBraintreeFragment);
-      PayPalRequest request = new PayPalRequest("1")
+      PayPalRequest request = new PayPalRequest(amount)
     .currencyCode("EUR")
     .intent(PayPalRequest.INTENT_AUTHORIZE);
 
@@ -227,11 +227,8 @@ ThreeDSecure.performVerification(this.mBraintreeFragment, threeDSecureRequest);
             BraintreePaymentActivity.EXTRA_PAYMENT_METHOD_NONCE
           );
 
-          if (this.threeDSecureOptions != null) {
-            ThreeDSecure.performVerification(this.mBraintreeFragment, paymentMethodNonce.getNonce(), String.valueOf(this.threeDSecureOptions.getDouble("amount")));
-          } else {
             this.successCallback.invoke(paymentMethodNonce.getNonce());
-          }
+          
           break;
         case BraintreePaymentActivity.BRAINTREE_RESULT_DEVELOPER_ERROR:
         case BraintreePaymentActivity.BRAINTREE_RESULT_SERVER_ERROR:
