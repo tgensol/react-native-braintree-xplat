@@ -50,8 +50,7 @@ RCT_EXPORT_METHOD(setupWithURLScheme:(NSString *)serverUrl urlscheme:(NSString*)
     [[[NSURLSession sharedSession] dataTaskWithRequest:clientTokenRequest completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSString *clientToken = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         self.braintreeClient = [[BTAPIClient alloc] initWithAuthorization:clientToken];
-        self.paymentFlowDriver = [[BTPaymentFlowDriver alloc] initWithAPIClient:clientToken];
-        self.paymentFlowDriver.viewControllerPresentingDelegate = self;
+      
         if (self.braintreeClient == nil) {
             callback(@[@false]);
         }
@@ -72,51 +71,6 @@ RCT_EXPORT_METHOD(setup:(NSString *)clientToken callback:(RCTResponseSenderBlock
         callback(@[@true]);
     }
 }
-
-// RCT_EXPORT_METHOD(showPaymentViewController:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback)
-// {
-//     dispatch_async(dispatch_get_main_queue(), ^{
-
-//         BTDropInViewController *dropInViewController = [[BTDropInViewController alloc] initWithAPIClient:self.braintreeClient];
-//         dropInViewController.delegate = self;
-
-//         NSLog(@"%@", options);
-
-//         UIColor *tintColor = options[@"tintColor"];
-//         UIColor *bgColor = options[@"bgColor"];
-//         UIColor *barBgColor = options[@"barBgColor"];
-//         UIColor *barTintColor = options[@"barTintColor"];
-
-//         NSString *title = options[@"title"];
-//         NSString *description = options[@"description"];
-//         NSString *amount = options[@"amount"];
-
-//         if (tintColor) dropInViewController.view.tintColor = [RCTConvert UIColor:tintColor];
-//         if (bgColor) dropInViewController.view.backgroundColor = [RCTConvert UIColor:bgColor];
-
-//         dropInViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(userDidCancelPayment)];
-
-//         self.callback = callback;
-
-//         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:dropInViewController];
-
-//         if (barBgColor) navigationController.navigationBar.barTintColor = [RCTConvert UIColor:barBgColor];
-//         if (barTintColor) navigationController.navigationBar.tintColor = [RCTConvert UIColor:barTintColor];
-
-//         if (options[@"callToActionText"]) {
-//             BTPaymentRequest *paymentRequest = [[BTPaymentRequest alloc] init];
-//             paymentRequest.callToActionText = options[@"callToActionText"];
-
-//             dropInViewController.paymentRequest = paymentRequest;
-//         }
-
-//         if (title) [dropInViewController.paymentRequest setSummaryTitle:title];
-//         if (description) [dropInViewController.paymentRequest setSummaryDescription:description];
-//         if (amount) [dropInViewController.paymentRequest setDisplayAmount:amount];
-
-//         [self.reactRoot presentViewController:navigationController animated:YES completion:nil];
-//     });
-// }
 
 RCT_EXPORT_METHOD(showPayPalViewController:(RCTResponseSenderBlock)callback)
 {
@@ -146,7 +100,6 @@ RCT_EXPORT_METHOD(showPayPalViewController:(RCTResponseSenderBlock)callback)
 RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTResponseSenderBlock)callback)
 {
     BTCardClient *cardClient = [[BTCardClient alloc] initWithAPIClient: self.braintreeClient];
-    //    BTCard *card = [[BTCard alloc] initWithParameters:parameters];
     BTCard *card =  [[BTCard alloc] initWithNumber:parameters[@"number"]
                                    expirationMonth:parameters[@"expirationMonth"]
                                     expirationYear:parameters[@"expirationYear"]
@@ -156,13 +109,13 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
                   completion:^(BTCardNonce *tokenizedCard, NSError *error) {
                       
                       if ( error == nil ) {
-                          
                           BTThreeDSecureRequest *threeDSecureRequest = [[BTThreeDSecureRequest alloc] init];
-                          threeDSecureRequest.amount = [NSDecimalNumber decimalNumberWithString:@"10"];
-                          threeDSecureRequest.nonce =  tokenizedCard.nonce;
-                          threeDSecureRequest.email = parameters[@"email"];
-                          threeDSecureRequest.versionRequested = BTThreeDSecureVersion2;
+                          threeDSecureRequest.amount = [NSDecimalNumber decimalNumberWithString: parameters[@"amount"]];
+                          threeDSecureRequest.nonce = tokenizedCard.nonce;
                           
+                          threeDSecureRequest.email = parameters[@"email"];
+//                          threeDSecureRequest.versionRequested = BTThreeDSecureVersion2;
+
                           BTThreeDSecurePostalAddress *address = [BTThreeDSecurePostalAddress new];
                           address.givenName =  parameters[@"firstname"]; // ASCII-printable characters required, else will throw a validation error
                           address.surname = parameters[@"lastname"]; // ASCII-printable characters required, else will throw a validation error
@@ -171,42 +124,60 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
                           address.locality = parameters[@"locality"];
                           address.region = parameters[@"region"];
                           address.postalCode = parameters[@"postalCode"];
-                          address.countryCodeAlpha2 = @"";
+//                          address.countryCodeAlpha2 = @"US";
+
+//                          BTThreeDSecurePostalAddress *address = [BTThreeDSecurePostalAddress new];
+//                          address.givenName = @"Jill"; // ASCII-printable characters required, else will throw a validation error
+//                          address.surname = @"Doe"; // ASCII-printable characters required, else will throw a validation error
+//                          address.phoneNumber = @"5551234567";
+//                          address.streetAddress = @"555 Smith St";
+//                          address.extendedAddress = @"#2";
+//                          address.locality = @"Chicago";
+//                          address.region = @"IL";
+//                          address.postalCode = @"12345";
+//                          address.countryCodeAlpha2 = @"US";
+
                           threeDSecureRequest.billingAddress = address;
-                          
                           // Optional additional information.
                           // For best results, provide as many of these elements as possible.
                           BTThreeDSecureAdditionalInformation *additionalInformation = [BTThreeDSecureAdditionalInformation new];
                           additionalInformation.shippingAddress = address;
                           threeDSecureRequest.additionalInformation = additionalInformation;
                           
+//
+                          self.paymentFlowDriver = [[BTPaymentFlowDriver alloc] initWithAPIClient:self.braintreeClient];
+                          self.paymentFlowDriver.viewControllerPresentingDelegate = self;
                           
-                          [self.paymentFlowDriver startPaymentFlow: threeDSecureRequest completion:^(BTPaymentFlowResult *result, NSError *error) {
-                              
-                              NSArray *args = @[];
-                              if (error) {
-                                  args = @[@"failed", error];
-                              } else if (result) {
-                                  BTThreeDSecureResult *threeDSecureResult = (BTThreeDSecureResult *)result;
-                                  
-                                  if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShiftPossible) {
-                                      if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShifted) {
-                                          args = @[[NSNull null], tokenizedCard.nonce];
-                                      } else {
-                                          // 3D Secure authentication failed
-                                          //   args = @[serialisationErr.description, [NSNull null]];
-                                          args = @[@"failed", [NSNull null]];
-                                      }
-                                  } else {
+                        
+                              [self.paymentFlowDriver startPaymentFlow:threeDSecureRequest completion:^(BTPaymentFlowResult * _Nonnull result, NSError * _Nonnull error) {
+                                   NSArray *args = @[];
+                                  if (error) {
+                                        NSLog(@"Finally error %@", error.description);
+                                         args = @[error.localizedDescription, [NSNull null]];
+                                      // Handle error
+                                  } else if (result) {
+ NSLog(@"Finally %@", result);
+                                             BTThreeDSecureResult *threeDSecureResult = (BTThreeDSecureResult *)result;
+                                      
+                                                                                   if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShiftPossible) {
+                                                                                       if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShifted) {
+                                                                                           args = @[[NSNull null], threeDSecureResult.tokenizedCard.nonce];
+                                                                                       } else {
+                                                                                           // 3D Secure authentication failed
+                                                                                           //   args = @[serialisationErr.description, [NSNull null]];
+                                                                                           args = @[@"failed", [NSNull null]];
+                                                                                       }
+                                                                                   }else{
+                                                                                         args = @[[NSNull null], threeDSecureResult.tokenizedCard.nonce];
+                                                                                   }
+                                  }else{
                                       // 3D Secure authentication was not possible
-                                      args = @[[NSNull null], tokenizedCard.nonce];
+                                                                            args = @[[NSNull null], tokenizedCard.nonce];
                                   }
-                                  
-                                  
-                              }
-                              callback(args);
-                          }];
-                          
+                                  callback(args);
+                              }];
+                    
+
                       } else {
                           
                           NSArray *args = @[];
@@ -298,8 +269,8 @@ RCT_EXPORT_METHOD(getDeviceData:(NSDictionary *)options callback:(RCTResponseSen
 }
 
 - (void)paymentDriver:(id)paymentDriver requestsDismissalOfViewController:(UIViewController *)viewController {
-    if (!viewController.isBeingDismissed) {
-        [viewController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    if (!self.reactRoot.isBeingDismissed) {
+        [self.reactRoot.presentingViewController dismissViewControllerAnimated:YES completion:nil];
     }
 }
 
@@ -310,52 +281,6 @@ RCT_EXPORT_METHOD(getDeviceData:(NSDictionary *)options callback:(RCTResponseSen
     runCallback = FALSE;
     self.callback(@[@"USER_CANCELLATION", [NSNull null]]);
 }
-
-// - (void)dropInViewControllerWillComplete:(BTDropInViewController *)viewController {
-//     runCallback = TRUE;
-// }
-
-// - (void)dropInViewController:(BTDropInViewController *)viewController didSucceedWithTokenization:(BTPaymentMethodNonce *)paymentMethodNonce {
-//     // when the user pays for the first time with paypal, dropInViewControllerWillComplete is never called, yet the callback should be invoked.  the second condition checks for that
-//     if (runCallback || ([paymentMethodNonce.type isEqualToString:@"PayPal"] && [viewController.paymentMethodNonces count] == 1)) {
-//         // if (self.threeDSecure) {
-//         //     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
-//         //     [self.threeDSecure verifyCardWithNonce:paymentMethodNonce.nonce
-//         //                                     amount:self.threeDSecureOptions[@"amount"]
-//         //                                 completion:^(BTThreeDSecureCardNonce *card, NSError *error) {
-//         //                                     if (runCallback) {
-//         //                                         runCallback = FALSE;
-//         //                                         if (error) {
-//         //                                             self.callback(@[error.localizedDescription, [NSNull null]]);
-//         //                                         } else if (card) {
-//         //                                             if (!card.liabilityShiftPossible) {
-//         //                                                 self.callback(@[@"3DSECURE_NOT_ABLE_TO_SHIFT_LIABILITY", [NSNull null]]);
-//         //                                             } else if (!card.liabilityShifted) {
-//         //                                                 self.callback(@[@"3DSECURE_LIABILITY_NOT_SHIFTED", [NSNull null]]);
-//         //                                             } else {
-//         //                                                 self.callback(@[[NSNull null], card.nonce]);
-//         //                                             }
-//         //                                         } else {
-//         //                                             self.callback(@[@"USER_CANCELLATION", [NSNull null]]);
-//         //                                         }
-//         //                                     }
-//         //                                     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
-//         //                                 }];
-//         // } else {
-//             runCallback = FALSE;
-//             self.callback(@[[NSNull null], paymentMethodNonce.nonce]);
-//         // }
-//     }
-
-//     if (!self.threeDSecure) {
-//         [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
-//     }
-// }
-
-// - (void)dropInViewControllerDidCancel:(__unused BTDropInViewController *)viewController {
-//     self.callback(@[@"Drop-In ViewController Closed", [NSNull null]]);
-//     [viewController dismissViewControllerAnimated:YES completion:nil];
-// }
 
 - (UIViewController*)reactRoot {
     UIViewController *root = [UIApplication sharedApplication].keyWindow.rootViewController;

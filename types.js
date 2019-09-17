@@ -5,6 +5,7 @@ export type CardParameters = {
   cvv: string,
   expirationDate: string,
   cardholderName: string,
+  amount: string
   firstName: string,
   lastName: string,
   company: string,
@@ -26,6 +27,7 @@ export type IOSCardParameters = {
   expirationYear: string,
   expirationDate: string,
   cardholderName: string,
+  amount: string
   billingAddress: {
     postalCode: string,
     streetAddress: string,
