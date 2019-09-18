@@ -4,7 +4,6 @@
 
 import {
   NativeModules,
-  processColor
 } from 'react-native';
 
 import type {
@@ -32,7 +31,7 @@ var Braintree = {
 
   showPayPalViewController(amount: string) {
     return new Promise(function (resolve, reject) {
-      RCTBraintree.showPayPalViewController(function (err, nonce) {
+      RCTBraintree.showPayPalViewController(amount, function (err, nonce) {
         nonce != null ? resolve(nonce) : reject(err);
       });
     });
