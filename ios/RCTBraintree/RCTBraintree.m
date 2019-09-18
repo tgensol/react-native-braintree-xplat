@@ -72,7 +72,7 @@ RCT_EXPORT_METHOD(setup:(NSString *)clientToken callback:(RCTResponseSenderBlock
     }
 }
 
-RCT_EXPORT_METHOD(showPayPalViewController:((NSString *)amount, RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(showPayPalViewController: (NSString *)amount callback: (RCTResponseSenderBlock) callback)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         
@@ -334,10 +334,12 @@ RCT_EXPORT_METHOD(getDeviceData:(NSDictionary *)options callback:(RCTResponseSen
     });
 }
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options{
     
     if ([url.scheme localizedCaseInsensitiveCompare:URLScheme] == NSOrderedSame) {
-        return [BTAppSwitch handleOpenURL:url sourceApplication:sourceApplication];
+        return [BTAppSwitch handleOpenURL:url options:options];
     }
     return NO;
 }
